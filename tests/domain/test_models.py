@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from mastermind.domain.models import Mastermind, CodePeg, KeyPeg, CodeMaker
+=======
+from mastermind.domain.models import Mastermind, CodePeg, KeyPeg
+>>>>>>> de77e00287c9505ff241c88b5efc631ae7462228
 from typing import Sequence
 from pytest import raises
 import re
