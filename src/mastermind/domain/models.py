@@ -3,20 +3,27 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 from enum import Enum
-from typing import Final, Iterable, List, Sequence
+from typing import Final, Iterable, List, Sequence, Optional
+
+
+class CodeMaker:
+    def make(self, num: int) -> Sequence[CodePeg]:
+        return random.choices(list(CodePeg), k=num)
 
 
 class Mastermind:
     MAXIMUM_NUMBER_OF_GUESSES: Final[int] = 10
     NUMBER_OF_CODE_PEGS: Final[int] = 4
 
-    def __init__(self, code_maker: CodeMaker):
+    def __init__(self, code_maker: Optional[CodeMaker] = None):
+        code_maker = code_maker or CodeMaker()
+
         self._trials: List[Trial] = []
         self._secret_pegs = code_maker.make(Mastermind.NUMBER_OF_CODE_PEGS)
 
     @property
     def secret_pegs(self) -> Sequence[CodePeg]:
-        if self.state == "playing":
+        if self.state == GameState.PLAYING:
             raise AssertionError("Secret pegs are only visible when game is finished.")
         return self._secret_pegs
 
@@ -27,14 +34,16 @@ class Mastermind:
     @property
     def state(self) -> str:
         # TODO: Test edge cases.
-        if len(self._trials) > self.MAXIMUM_NUMBER_OF_GUESSES:
-            return "lost"
         if self._trials and self._trials[-1].guess_pegs == self._secret_pegs:
-            return "won"
-        return "playing"
+            return GameState.WON
+
+        if len(self._trials) >= self.MAXIMUM_NUMBER_OF_GUESSES:
+            return GameState.LOST
+
+        return GameState.PLAYING
 
     def guess(self, guess_pegs: Sequence[CodePeg]) -> None:
-        if self.state in ("lost", "won"):
+        if self.state in (GameState.LOST, GameState.WON):
             raise AssertionError(
                 "A new guess is not allowed when the state of the game is "
                 '"{}".'.format(self.state)
@@ -56,11 +65,6 @@ class Mastermind:
         )
 
 
-class CodeMaker:
-    def make(self, num: int) -> Sequence[CodePeg]:
-        return random.choices(list(CodePeg), k=num)
-
-
 class CodePeg(str, Enum):
     RED = "red"
     BLUE = "blue"
@@ -73,6 +77,12 @@ class CodePeg(str, Enum):
 class KeyPeg(str, Enum):
     WHITE = "white"
     BLACK = "black"
+
+
+class GameState(str, Enum):
+    PLAYING = "playing"
+    WON = "won"
+    LOST = "lost"
 
 
 @dataclass

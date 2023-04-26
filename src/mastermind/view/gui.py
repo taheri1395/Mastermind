@@ -4,15 +4,13 @@ from typing import List
 from PyQt6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
                              QMessageBox, QPushButton, QVBoxLayout, QWidget)
 
-from mastermind.domain.models import CodeMaker, CodePeg, KeyPeg, Mastermind
-from unittest.mock import Mock
+from mastermind.domain.models import CodePeg, Mastermind
 
-code_maker = CodeMaker()
-mastermind = Mastermind(code_maker)
+mastermind = Mastermind()
 
 
 def submit() -> None:
-    if mastermind.state != "playing":
+    if mastermind.state != GameState.PLAYING:
         message_box = QMessageBox()
         message_box.setText('You already "{}".'.format(mastermind.state))
         message_box.exec()
@@ -43,12 +41,12 @@ def submit() -> None:
             "background-color: {}".format(key_peg.value)
         )
 
-    if mastermind.state == "won":
+    if mastermind.state == GameState.WON:
         message_box = QMessageBox()
         message_box.setText("Congragulation! You won.")
         message_box.exec()
         return
-    elif mastermind.state == "lost":
+    elif mastermind.state == GameState.LOST:
         message_box = QMessageBox()
         message_box.setText(
             "You lost. The secret was ({})".format(

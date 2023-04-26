@@ -4,21 +4,21 @@ from unittest.mock import Mock
 
 from pytest import raises
 
-from mastermind.domain.models import CodeMaker, CodePeg, KeyPeg, Mastermind
+from mastermind.domain.models import CodeMaker, CodePeg, KeyPeg, GameState, Mastermind
 
 
 def test_starting_a_new_game() -> None:
     # Arrange (empty)
 
     # Act
-    game = Mastermind(code_maker=Mock())
+    game = Mastermind()
 
     # Assert (empty)
 
 
 def test_getting_trials_of_a_new_game() -> None:
     # Arrange
-    game = Mastermind(code_maker=Mock())
+    game = Mastermind()
 
     # Act
     trials = game.trials
@@ -30,22 +30,18 @@ def test_getting_trials_of_a_new_game() -> None:
 
 def test_state_of_a_new_game() -> None:
     # Arrange
-    game = Mastermind(code_maker=Mock())
+    game = Mastermind()
 
     # Act
     state = game.state
 
     # Assert
-    assert state == "playing"
+    assert state == GameState.PLAYING
 
 
 def test_making_a_guess_on_a_new_game() -> None:
     # Arrange
-    game = Mastermind(
-        code_maker=Mock(
-            make=Mock(return_value=[Mock()] * Mastermind.NUMBER_OF_CODE_PEGS)
-        )
-    )
+    game = Mastermind()
 
     # Act
     game.guess([CodePeg.RED] * Mastermind.NUMBER_OF_CODE_PEGS)
@@ -55,7 +51,7 @@ def test_making_a_guess_on_a_new_game() -> None:
 
 def test_making_a_guess_with_more_than_sufficient_number_of_code_pegs() -> None:
     # Arrange
-    game = Mastermind(code_maker=Mock())
+    game = Mastermind()
 
     # Act, Assert
     with raises(ValueError, match="number of code-pegs"):
@@ -64,7 +60,7 @@ def test_making_a_guess_with_more_than_sufficient_number_of_code_pegs() -> None:
 
 def test_making_a_guess_with_less_than_sufficient_number_of_code_pegs() -> None:
     # Arrange
-    game = Mastermind(code_maker=Mock())
+    game = Mastermind()
 
     # Act, Assert
     with raises(ValueError, match="number of code-pegs"):
@@ -73,11 +69,7 @@ def test_making_a_guess_with_less_than_sufficient_number_of_code_pegs() -> None:
 
 def test_making_a_guess_should_add_a_new_trial() -> None:
     # Arrange
-    game = Mastermind(
-        code_maker=Mock(
-            make=Mock(return_value=[Mock()] * Mastermind.NUMBER_OF_CODE_PEGS)
-        )
-    )
+    game = Mastermind()
 
     # Act
     game.guess([CodePeg.RED] * Mastermind.NUMBER_OF_CODE_PEGS)
@@ -99,7 +91,7 @@ def test_state_after_maximum_number_of_wrong_guesses() -> None:
     state = game.state
 
     # Assert
-    assert state == "lost"
+    assert state == GameState.LOST
 
 
 def test_making_a_guess_should_raise_error_when_state_is_lost() -> None:
@@ -115,7 +107,7 @@ def test_making_a_guess_should_raise_error_when_state_is_lost() -> None:
     state = game.state
 
     # Assume
-    assert state == "lost"
+    assert state == GameState.LOST
 
     # Assert
     with raises(AssertionError):
@@ -133,7 +125,7 @@ def test_making_a_correct_guess_should_change_the_state_to_won() -> None:
     state = game.state
 
     # Assert
-    assert state == "won"
+    assert state == GameState.WON
 
 
 def test_making_a_guess_should_raise_error_when_state_is_won() -> None:
@@ -147,7 +139,7 @@ def test_making_a_guess_should_raise_error_when_state_is_won() -> None:
     state = game.state
 
     # Assume
-    assert state == "won"
+    assert state == GameState.WON
 
     # Assert
     with raises(AssertionError):
@@ -213,7 +205,7 @@ def test_guess_peg_with_correct_color_and_position_should_generate_white_key_peg
 
 
 def test_a_guess_peg_should_only_affect_response_once() -> None:
-    # Assert
+    # Arrange
     secret_pegs = [CodePeg.BLUE] * (Mastermind.NUMBER_OF_CODE_PEGS - 1) + [
         CodePeg.BROWN
     ]
@@ -230,18 +222,18 @@ def test_a_guess_peg_should_only_affect_response_once() -> None:
     response = list(last_trial.response_pegs)
 
     # Assert
-    assert response == [KeyPeg.WHITE]
+    assert response == [KeyPeg.WHITE, KeyPeg.BLACK]
 
 
 def test_getting_secret_key_should_raise_error_when_state_is_playing() -> None:
     # Arrange
-    game = Mastermind(code_maker=Mock())
+    game = Mastermind()
 
     # Act
     state = game.state
 
     # Assume
-    assert state == "playing"
+    assert state == GameState.PLAYING
 
     # Assert
     with raises(AssertionError):
@@ -259,7 +251,7 @@ def test_getting_secret_key_when_state_is_not_playing() -> None:
     state = game.state
 
     # Assume
-    assert state == "won"
+    assert state == GameState.WON
 
     # Assert
     assert game.secret_pegs
