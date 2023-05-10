@@ -4,7 +4,7 @@ from typing import List
 from PyQt6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
                              QMessageBox, QPushButton, QVBoxLayout, QWidget)
 
-from mastermind.domain.models import CodePeg, Mastermind
+from mastermind.domain.models import CodePeg, Mastermind, GameState
 
 mastermind = Mastermind()
 
