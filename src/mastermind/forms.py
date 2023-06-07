@@ -1,19 +1,15 @@
 from django import forms
+from .models import CodePeg
 
 
-BIRTH_YEAR_CHOICES = ["1980", "1981", "1982"]
-FAVORITE_COLORS_CHOICES = [
-    ("blue", "Blue"),
-    ("green", "Green"),
-    ("black", "Black"),
-]
+peg_choices = tuple(
+    (code_peg.name, code_peg.value)
+    for code_peg in CodePeg
+)
 
 
-class SimpleForm(forms.Form):
-    birth_year = forms.DateField(
-        widget=forms.SelectDateWidget(years=BIRTH_YEAR_CHOICES)
-    )
-    favorite_colors = forms.ChoiceField(
-        required=False,
-        choices=FAVORITE_COLORS_CHOICES,
-    )
+class GuessForm(forms.Form):
+    first_peg = forms.ChoiceField(choices=peg_choices)
+    second_peg = forms.ChoiceField(choices=peg_choices)
+    third_peg = forms.ChoiceField(choices=peg_choices)
+    fourth_peg = forms.ChoiceField(choices=peg_choices)

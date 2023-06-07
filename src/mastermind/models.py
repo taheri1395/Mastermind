@@ -3,19 +3,52 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 from enum import Enum
-from typing import Final, Iterable, List, Sequence, Optional
+from typing import Final, Iterable, List, Sequence, Optional, Any
 
 
 class CodeMaker:
     def make(self, num: int) -> Sequence[CodePeg]:
         return random.choices(list(CodePeg), k=num)
 
+from typing import TypeVar
+
+class Entity(type):
+    @property
+    def objects(self) -> Repository:
+        pass
+
+TEntity = TypeVar("TEntity", bound=Entity)
+
+class Repository:
+    def __init__(self) -> None:
+        self._items = []
+
+    def all(self) -> Iterable[TEntity]:
+        return self._items
+    
+    def get(self, **kwargs: Any) -> TEntity:
+        result = [
+            item
+            for item in self._items
+            if all(getattr(item, name) == value for name, value in kwargs.items())
+        ]
+        if not result:
+            raise ValueError("No element found.")
+        elif len(result) > 1:
+            raise ValueError("Too many")
+        return next(filter(lambda item: all(getattr(item, name) == value for name, value in kwargs.items()), self._items))
+
+
+class User(Entity):
+    def __init__(self, session_id: str) -> None:
+        self._session_id = session_id
+
 
 class Mastermind:
     MAXIMUM_NUMBER_OF_GUESSES: Final[int] = 10
     NUMBER_OF_CODE_PEGS: Final[int] = 4
 
-    def __init__(self, code_maker: Optional[CodeMaker] = None):
+    def __init__(self, code_maker: Optional[CodeMaker] = None) -> None:
         code_maker = code_maker or CodeMaker()
 
         self._trials: List[Trial] = []
@@ -63,6 +96,15 @@ class Mastermind:
             unsorted_result,
             key=lambda key_peg: key_peg == KeyPeg.BLACK
         )
+
+
+class MastermindPlayer:
+    def __init__(self, game: Mastermind, user: User) -> None:
+        self._game = game
+        self._user = user
+
+    def guess(self, guess_pegs: Sequence[CodePeg]) -> None:
+        self._game.guess(guess_pegs)
 
 
 class CodePeg(str, Enum):
