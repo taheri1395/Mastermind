@@ -10,36 +10,9 @@ class CodeMaker:
     def make(self, num: int) -> Sequence[CodePeg]:
         return random.choices(list(CodePeg), k=num)
 
-from typing import TypeVar
-
-class Entity(type):
-    @property
-    def objects(self) -> Repository:
-        pass
-
-TEntity = TypeVar("TEntity", bound=Entity)
-
-class Repository:
-    def __init__(self) -> None:
-        self._items = []
-
-    def all(self) -> Iterable[TEntity]:
-        return self._items
-    
-    def get(self, **kwargs: Any) -> TEntity:
-        result = [
-            item
-            for item in self._items
-            if all(getattr(item, name) == value for name, value in kwargs.items())
-        ]
-        if not result:
-            raise ValueError("No element found.")
-        elif len(result) > 1:
-            raise ValueError("Too many")
-        return next(filter(lambda item: all(getattr(item, name) == value for name, value in kwargs.items()), self._items))
 
 
-class User(Entity):
+class User:
     def __init__(self, session_id: str) -> None:
         self._session_id = session_id
 
@@ -99,12 +72,22 @@ class Mastermind:
 
 
 class MastermindPlayer:
+    _instances = {}
+
     def __init__(self, game: Mastermind, user: User) -> None:
         self._game = game
         self._user = user
 
     def guess(self, guess_pegs: Sequence[CodePeg]) -> None:
         self._game.guess(guess_pegs)
+
+    @classmethod
+    def get_or_create(cls, user_id: str) -> MastermindPlayer:
+        if user_id in cls._instances:
+            return cls._instances[user_id]
+        mastermind_player = MastermindPlayer(game=Mastermind(), user=User(user_id))
+        cls._instances[user_id] = mastermind_player
+        return mastermind_player
 
 
 class CodePeg(str, Enum):
